@@ -37,11 +37,82 @@ Iris dataset.
 10. **Stop.**
 
 ## Program
+```python
+# Step 1: Import required libraries
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import svm
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
 
+# Step 2: Load Iris dataset
+iris = load_iris()
+# iris = pd.read_csv('iris.csv')
+X = iris.data[:, :2]
+y = iris.target
+feature_names = iris.feature_names[:2]
 
+# Step 3: Split dataset into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42, stratify=y)
+
+# Step 4: Standardize the features
+scaler = StandardScaler()
+X_train_s = scaler.fit_transform(X_train)
+X_test_s = scaler.transform(X_test)
+
+# Step 5: Train Linear SVM model
+svm_linear = svm.SVC(kernel='linear', C=1.0, probability=True)
+svm_linear.fit(X_train_s, y_train)
+y_pred_lin = svm_linear.predict(X_test_s)
+acc_lin = accuracy_score(y_test, y_pred_lin)
+print("Linear SVM Accuracy:", acc_lin)
+
+# Step 6: Train RBF SVM model
+svm_rbf = svm.SVC(kernel='rbf', C=1.0, gamma='scale')
+svm_rbf.fit(X_train_s, y_train)
+y_pred_rbf = svm_rbf.predict(X_test_s)
+acc_rbf = accuracy_score(y_test, y_pred_rbf)
+print("RBF SVM Accuracy:", acc_rbf)
+
+# Step 7: Mount Google Drive
+from google.colab import drive
+drive.mount('/content/drive')
+
+# Step 8: Create mesh grid for decision boundary
+x_min, x_max = X_train_s[:, 0].min()-1, X_train_s[:, 0].max()+1
+y_min, y_max = X_train_s[:, 1].min()-1, X_train_s[:, 1].max()+1
+
+xx, yy = np.meshgrid(
+    np.linspace(x_min, x_max, 200),
+    np.linspace(y_min, y_max, 200)
+)
+
+# Step 9: Predict decision regions using RBF SVM
+Z = svm_rbf.predict(
+    np.c_[xx.ravel(), yy.ravel()]
+).reshape(xx.shape)
+
+# Step 10: Visualize SVM decision regions
+plt.figure(figsize=(8,6))
+plt.contourf(xx, yy, Z, alpha=0.3)
+plt.scatter(X_train_s[:, 0], X_train_s[:, 1], c=y_train, edgecolor='k', s=40)
+
+plt.title('SVM (RBF) decision regions (training set)')
+plt.xlabel(feature_names[0])
+plt.ylabel(feature_names[1])
+plt.show()
+```
 
 ## output
-
-
+```text
+ Linear SVM Accuracy: 0.6888888888888889
+RBF SVM Accuracy: 0.6888888888888889
+Mounted at /content/drive
+```
+![SVM Output](Exp4-1.png)
 
 ## Result
+Thus, the Support Vector Machine (SVM) classification was successfully implemented using Linear and RBF kernels on the Iris dataset. Both models achieved an accuracy of 68.89%, and the RBF SVM decision regions were successfully visualized using Python.
